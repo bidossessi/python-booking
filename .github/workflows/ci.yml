@@ -44,7 +44,7 @@ jobs:
         with:
           path: ${{github.workspace}}/.venv
           key: test-${{ hashFiles('**/poetry.lock') }}
-          restore-keys: ${{ matrix.os }}-
+          restore-keys: test-
       - name: Install deps
         if: steps.cache-deps.cache-hit != 'true'
         run: |
