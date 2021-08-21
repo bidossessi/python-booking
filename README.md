@@ -1,6 +1,6 @@
 # Python Booking
 
-![main](https://github.com/bidossessi/python-booking/actions/workflows/test.yml/badge.svg?branch=main)
+![main](https://github.com/bidossessi/python-booking/actions/workflows/tests.yml/badge.svg?branch=main)
 
 
 This project is an attempt to provide a product-agnostic booking REST API.
