@@ -55,7 +55,8 @@ class BookingQuery:
     date_start: datetime.datetime
     date_end: datetime.datetime
     resource_id: Optional[uuid.UUID]
-    tags: List[str]
+    order_id: Optional[uuid.UUID]
+    tags: Optional[List[str]] = None
 
 
 class BookingRepository(abc.ABC):
@@ -64,7 +65,7 @@ class BookingRepository(abc.ABC):
         self,
         query: BookingQuery,
         paginate: Optional[Paginate],
-    ) -> Iterable[Booking]:
+    ) -> Page[Booking]:
         pass
 
     @abc.abstractmethod

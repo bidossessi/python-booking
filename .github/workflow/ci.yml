@@ -1,0 +1,51 @@
+name: CI
+on: pull_request
+
+jobs:
+  black-formatting-check:
+    name: Check formatting
+    runs-on: 'ubuntu-latest'
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+      - uses: psf/black@stable
+  build:
+    name: Check formatting
+    runs-on: 'ubuntu-latest'
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+      - name: Cache Poetry
+        id: cache-poetry
+        uses: actions/cache@v2.1.5
+        with:
+          path: ~/.poetry
+          key: test-poetry
+      # Only runs when key from caching step changes
+      - name: Install latest version of Poetry
+        if: steps.cache-poetry.outputs.cache-hit != 'true'
+        run: |
+          curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python -
+      # Poetry still needs to be re-prepended to the PATH on each run, since
+      # PATH does not persist between runs.
+      - name: Add Poetry to $PATH
+        run: |
+          echo "$HOME/.poetry/bin" >> $GITHUB_PATH
+      - name: Get Poetry version
+        run: poetry --version
+      - name: Check pyproject.toml validity
+        run: poetry check --no-interaction
+      - name: Cache dependencies
+        id: cache-deps
+        uses: actions/cache@v2.1.5
+        with:
+          path: ${{github.workspace}}/.venv
+          key: test-${{ hashFiles('**/poetry.lock') }}
+          restore-keys: ${{ matrix.os }}-
+      - name: Install deps
+        if: steps.cache-deps.cache-hit != 'true'
+        run: |
+          poetry config virtualenvs.in-project true
+          poetry install --no-interaction
+      - name: Run tests
+        run: poetry run pytest -v
