@@ -3,24 +3,31 @@ import datetime
 from dateutil import rrule
 from typing import List, Optional
 from pydantic.dataclasses import dataclass
-from pydantic import ValidationError, validator
+from pydantic import ValidationError
 
 
 @dataclass
-class Resource:
+class ResourceIn:
     id: uuid.UUID
     tags: List[str]
 
+
+@dataclass
+class Resource(ResourceIn):
     def __eq__(self, o: object) -> bool:
         return hasattr(o, "id") and self.id == o.id
 
 
 @dataclass
-class Booking:
+class BookingIn:
     resource_id: uuid.UUID
     order_id: str
     date_start: datetime.datetime
     date_end: datetime.datetime
+
+
+@dataclass
+class Booking(BookingIn):
     tags: List[str]
 
     # @validator("date_end")

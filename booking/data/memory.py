@@ -24,7 +24,7 @@ class MemoryResourceRepo(ResourceRepository):
         self,
         query: ResourceQuery,
         # TODO: implement poor man's pagination
-        paginate: Optional[Paginate],
+        paginate: Optional[Paginate] = None,
     ) -> Page[Resource]:
         def _match(item: Resource, query) -> bool:
             matches_res = item.id == query.resource_id if query.resource_id else True
@@ -60,7 +60,7 @@ class MemoryBookingRepo(BookingRepository):
         self,
         query: BookingQuery,
         # TODO: implement poor man's pagination
-        paginate: Optional[Paginate],
+        paginate: Optional[Paginate] = None,
     ) -> Page[Booking]:
         def _match(item: Booking, query) -> bool:
             matches_date = item.intersects(query.date_start, query.date_end)

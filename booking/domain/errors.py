@@ -4,3 +4,7 @@ class ResourceNotFound(Exception):
 
 class BookingNotFound(Exception):
     pass
+
+
+class BookingConflict(Exception):
+    pass

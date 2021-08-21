@@ -30,15 +30,25 @@ def resource_repo():
 @pytest.fixture(scope="session", autouse=True)
 def booking_repo(resource_repo):
     repo = MemoryBookingRepo()
+    today = datetime.datetime.today()
+    tuples = [
+        (
+            r.id,
+            today + relativedelta(weeks=count + 1),
+            today + relativedelta(months=count + 1),
+            r.tags,
+        )
+        for count, r in enumerate(resource_repo.store)
+    ]
     items = [
         Booking(
             order_id=uuid.uuid4().hex,
-            resource_id=r.id,
-            date_start=(datetime.datetime.now() + relativedelta(days=count)),
-            date_end=(datetime.datetime.now() + relativedelta(months=count)),
-            tags=r.tags,
+            resource_id=id,
+            date_start=start,
+            date_end=end,
+            tags=tags,
         )
-        for count, r in enumerate(resource_repo.store)
+        for id, start, end, tags in tuples
     ]
     for item in items:
         repo.save(item)
