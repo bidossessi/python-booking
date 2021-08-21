@@ -12,8 +12,8 @@ jobs:
       - uses: actions/checkout@v2
       - uses: actions/setup-python@v2
       - uses: psf/black@stable
-  build:
-    name: Check formatting
+  test:
+    name: Test
     runs-on: 'ubuntu-latest'
     steps:
       - uses: actions/checkout@v2
