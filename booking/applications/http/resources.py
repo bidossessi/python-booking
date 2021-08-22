@@ -3,72 +3,54 @@ from http import HTTPStatus
 
 from fastapi import APIRouter, Depends, Response
 
-from booking.applications.http.models import (
-    BookingOutPage,
-    ResourceIn,
-    ResourceOut,
-    ResourceOutPage,
-    ResourceParams,
-    TagsIn,
-    TimeFrameIn,
-    get_booking_service,
-    get_resource_service,
-)
-from booking.domain.repositories import Paginate
-from booking.domain.repositories.bookings import BookingQuery
-from booking.domain.services import ResourceService
-from booking.domain.services.bookings import BookingService
+from booking.applications.http import models
+from booking.domain import services
 
 router = APIRouter()
 
 
-@router.get("/", response_model=ResourceOutPage)
+@router.get("/")
 async def find_resources(
-    params: ResourceParams = Depends(ResourceParams),
-    paginate: Paginate = Depends(Paginate),
-    service: ResourceService = Depends(get_resource_service),
+    params: models.ResourceParams = Depends(models.ResourceParams),
+    service: services.ResourceService = Depends(models.get_resource_service),
 ):
-    return service.find(params.to_query(), paginate)
+    matches = service.find(params.to_query())
+    return models.ResourceOutPage(items=matches)
 
 
-@router.post("/", status_code=HTTPStatus.CREATED, response_model=ResourceOut)
+@router.post("/", status_code=HTTPStatus.CREATED, response_model=models.ResourceOut)
 async def create_resource(
-    dao: ResourceIn,
-    service: ResourceService = Depends(get_resource_service),
+    dao: models.ResourceIn,
+    service: services.ResourceService = Depends(models.get_resource_service),
 ):
     return service.create(dao)
 
 
-@router.get("/{resource_id}/", response_model=ResourceOut)
+@router.get("/{resource_id}/", response_model=models.ResourceOut)
 async def get_resource(
     resource_id: uuid.UUID,
-    service: ResourceService = Depends(get_resource_service),
+    service: services.ResourceService = Depends(models.get_resource_service),
 ):
     return service.get(resource_id)
 
 
-@router.patch("/{resource_id}/", response_model=ResourceOut)
+@router.patch("/{resource_id}/", response_model=models.ResourceOut)
 async def patch_resource(
     resource_id: uuid.UUID,
-    dto: TagsIn,
-    service: ResourceService = Depends(get_resource_service),
+    dto: models.TagsIn,
+    service: services.ResourceService = Depends(models.get_resource_service),
 ):
     return service.update(resource_id, dto.tags)
 
 
-@router.get("/{resource_id}/bookings", response_model=BookingOutPage)
+@router.get("/{resource_id}/bookings")
 async def get_resource_bookings(
     resource_id: uuid.UUID,
-    timeframe: TimeFrameIn = Depends(TimeFrameIn),
-    paginate: Paginate = Depends(Paginate),
-    service: BookingService = Depends(get_booking_service),
+    timeframe: models.TimeFrameIn = Depends(models.TimeFrameIn),
+    service: services.ResourceService = Depends(models.get_resource_service),
 ):
-    query = BookingQuery(
-        resource_id=resource_id,
-        date_start=timeframe.date_start,
-        date_end=timeframe.date_end,
-    )
-    return service.find(query, paginate=paginate)
+    matches = service.find_bookings_for(resource_id, timeframe)
+    return models.BookingOutPage(items=matches)
 
 
 @router.delete(
@@ -76,6 +58,6 @@ async def get_resource_bookings(
 )
 async def delete_resource(
     resource_id: uuid.UUID,
-    service: ResourceService = Depends(get_resource_service),
+    service: services.ResourceService = Depends(models.get_resource_service),
 ):
     service.delete(resource_id)

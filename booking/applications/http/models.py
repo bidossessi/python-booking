@@ -5,32 +5,38 @@ from typing import List, Optional
 from dateutil.parser import parse
 from pydantic import BaseModel, validator
 
-from booking.data.memory import MemoryBookingRepo, MemoryResourceRepo
-from booking.domain.repositories import BookingQuery, ResourceQuery
+from booking.data.memory import MemoryRepository
+from booking.domain.repository import BookingQuery, ResourceQuery
 from booking.domain.services import BookingService, ResourceService
 
 
 async def get_resource_service() -> ResourceService:
-    return ResourceService(
-        booking_repo=MemoryBookingRepo(),
-        resource_repo=MemoryResourceRepo(),
-    )
+    return ResourceService(repo=MemoryRepository())
 
 
 async def get_booking_service() -> BookingService:
-    return BookingService(
-        booking_repo=MemoryBookingRepo(),
-        resource_repo=MemoryResourceRepo(),
-    )
+    return BookingService(repo=MemoryRepository())
 
 
-class ResourceParams(BaseModel):
-    resource_id: Optional[uuid.UUID] = None
+class TagsParams(BaseModel):
     tags: Optional[str] = None
 
+    @validator("tags", always=True)
+    def split_tags(cls, v):
+        if v:
+            return v.split(",")
+
+
+class ResourceParams(TagsParams):
+    resource_id: Optional[uuid.UUID] = None
+    reference_id: Optional[str] = None
+
     def to_query(self) -> ResourceQuery:
-        tags = self.tags.split(",") if self.tags else None
-        return ResourceQuery(resource_id=self.resource_id, tags=tags)
+        return ResourceQuery(
+            resource_id=self.resource_id,
+            reference_id=self.reference_id,
+            tags=self.tags,
+        )
 
 
 class TagsIn(BaseModel):
@@ -38,18 +44,24 @@ class TagsIn(BaseModel):
 
 
 class ResourceIn(BaseModel):
-    id: uuid.UUID
+    reference_id: str
     tags: List[str]
 
 
 class ResourceOut(ResourceIn):
+    resource_id: uuid.UUID
+
     class Config:
         orm_mode = True
 
 
 class ResourceOutPage(BaseModel):
-    count: int
     items: List[ResourceOut]
+    count: Optional[int]
+
+    @validator("count", always=True)
+    def compute_count(cls, v, values, **kwargs):
+        return len(values.get("items", []))
 
     class Config:
         orm_mode = True
@@ -59,38 +71,26 @@ class TimeFrameIn(BaseModel):
     date_start: str
     date_end: str
 
-    @validator("date_start")
+    @validator("date_start", always=True)
     def parse_date_start(cls, v):
         return parse(v)
 
-    @validator("date_end", check_fields=False)
+    @validator("date_end", always=True)
     def parse_date_end(cls, v):
         return parse(v)
 
 
-class BookingParams(BaseModel):
-    date_start: str
-    date_end: str
+class BookingParams(TimeFrameIn, TagsParams):
     resource_id: Optional[uuid.UUID] = None
     order_id: Optional[str] = None
-    tags: Optional[str] = None
-
-    @validator("date_start")
-    def parse_date_start(cls, v):
-        return parse(v)
-
-    @validator("date_end", check_fields=False)
-    def parse_date_end(cls, v):
-        return parse(v)
 
     def to_query(self) -> BookingQuery:
-        tags = self.tags.split(",") if self.tags else None
         return BookingQuery(
             date_start=self.date_start,
             date_end=self.date_end,
             order_id=self.order_id,
             resource_id=self.resource_id,
-            tags=tags,
+            tags=self.tags,
         )
 
 
@@ -124,8 +124,12 @@ class BookingOut(BaseModel):
 
 
 class BookingOutPage(BaseModel):
-    count: int
     items: List[BookingOut]
+    count: Optional[int]
+
+    @validator("count", always=True)
+    def compute_count(cls, v, values, **kwargs):
+        return len(values.get("items", []))
 
     class Config:
         orm_mode = True

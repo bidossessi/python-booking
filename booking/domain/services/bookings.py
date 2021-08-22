@@ -1,37 +1,18 @@
 import uuid
-
-from booking.domain import errors, models, repositories
+from typing import Iterable
+from booking.domain import models, repository
 
 
 class BookingService:
-    def __init__(
-        self,
-        resource_repo: repositories.ResourceRepository,
-        booking_repo: repositories.BookingRepository,
-    ) -> None:
-        self.booking_repo = booking_repo
-        self.resource_repo = resource_repo
+    def __init__(self, repo: repository.BookingRepository) -> None:
+        self.repo = repo
 
-    def find(
-        self,
-        query: repositories.BookingQuery,
-        paginate: repositories.Paginate,
-    ) -> repositories.Page[models.Booking]:
-        return self.booking_repo.find(query, paginate=paginate)
+    def find(self, query: repository.BookingQuery) -> Iterable[models.Booking]:
+        return self.repo.find_bookings(query)
 
     def create(self, booking_in: models.BookingIn) -> models.Booking:
-        conflicts = self.booking_repo.check(
-            repositories.BookingQuery(
-                date_start=booking_in.date_start,
-                date_end=booking_in.date_end,
-                resource_id=booking_in.resource_id,
-            )
-        )
-        if conflicts:
-            raise errors.BookingConflict(booking_in.resource_id)
-        resource = self.resource_repo.get(booking_in.resource_id)
+        resource = self.repo.get_resource(booking_in.resource_id)
         booking = models.Booking(
-            id=uuid.uuid4(),
             resource_id=booking_in.resource_id,
             order_id=booking_in.order_id,
             date_start=booking_in.date_start,
@@ -39,29 +20,13 @@ class BookingService:
             system=booking_in.system,
             tags=resource.tags,
         )
-        return self.booking_repo.save(booking)
+        return self.repo.create_booking(booking)
 
-    def get(self, id: uuid.UUID) -> models.Booking:
-        return self.booking_repo.get(id)
+    def get(self, item_id: uuid.UUID) -> models.Booking:
+        return self.repo.get_booking(item_id)
 
-    def update(
-        self,
-        id: uuid.UUID,
-        timeframe: models.Timeframe,
-    ) -> models.Booking:
-        match = self.booking_repo.get(id)
-        conflicts = self.booking_repo.check(
-            repositories.BookingQuery(
-                date_start=timeframe.date_start,
-                date_end=timeframe.date_end,
-                resource_id=match.resource_id,
-            )
-        )
-        if conflicts:
-            raise errors.BookingConflict(id)
-        match.date_start = timeframe.date_start
-        match.date_end = timeframe.date_end
-        return self.booking_repo.save(match)
+    def update(self, item_id: uuid.UUID, timeframe: models.Timeframe) -> models.Booking:
+        return self.repo.update_booking(item_id, timeframe)
 
-    def delete(self, id: uuid.UUID) -> models.Booking:
-        return self.booking_repo.delete(id)
+    def delete(self, item_id: uuid.UUID) -> models.Booking:
+        return self.repo.delete_booking(item_id)

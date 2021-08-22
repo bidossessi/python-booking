@@ -1,7 +1,8 @@
+from booking.helpers import flatten_list
 import datetime
 from dateutil.relativedelta import relativedelta
 from booking.domain.models import Booking, Resource
-from booking.data.memory import MemoryBookingRepo, MemoryResourceRepo
+from booking.data.memory import MemoryRepository
 import pytest
 import uuid
 from fastapi.testclient import TestClient
@@ -14,65 +15,59 @@ def client():
 
 
 @pytest.fixture(scope="session", autouse=True)
-def resource_repo():
-    repo = MemoryResourceRepo()
+def repository():
+    repo = MemoryRepository()
     items = [
-        Resource(id=uuid.uuid4(), tags=["a", "b"]),
-        Resource(id=uuid.uuid4(), tags=["b", "c"]),
-        Resource(id=uuid.uuid4(), tags=["c", "d"]),
+        Resource(reference_id=str(uuid.uuid4()), tags=["a", "b"]),
+        Resource(reference_id=str(uuid.uuid4()), tags=["b", "c"]),
+        Resource(reference_id=str(uuid.uuid4()), tags=["c", "d"]),
+        Resource(reference_id=str(uuid.uuid4()), tags=[]),
     ]
     for item in items:
-        repo.save(item)
+        repo.create_resource(item)
 
-    return repo
-
-
-@pytest.fixture(scope="session", autouse=True)
-def booking_repo(resource_repo):
-    repo = MemoryBookingRepo()
     today = datetime.datetime.today()
     tuples = [
-        (
-            r.id,
-            today + relativedelta(weeks=count + 1),
-            today + relativedelta(months=count + 1),
-            r.tags,
-        )
-        for count, r in enumerate(resource_repo.store)
+        [
+            (r.resource_id, count, count + 1, r.tags),
+            (r.resource_id, count + 4, count + 5, r.tags),
+            (r.resource_id, count + 9, count + 10, r.tags),
+        ]
+        for count, r in enumerate(items)
         if r.tags
     ]
+    tuples = flatten_list(tuples)
     items = [
         Booking(
-            id=uuid.uuid4(),
-            order_id=uuid.uuid4().hex,
-            resource_id=id,
-            date_start=start,
-            date_end=end,
+            order_id=str(uuid.uuid4()),
+            resource_id=item_id,
+            date_start=today + relativedelta(months=start),
+            date_end=today + relativedelta(months=end),
             tags=tags,
         )
-        for id, start, end, tags in tuples
+        for item_id, start, end, tags in tuples
     ]
     for item in items:
-        repo.save(item)
+        repo.create_booking(item)
 
     return repo
 
 
 @pytest.fixture(scope="function")
-def resource(resource_repo):
-    return resource_repo.store[0]
+def resource(repository):
+    return repository.resource_store[0]
 
 
 @pytest.fixture(scope="function")
-def last_resource(resource_repo):
-    return resource_repo.store[-1]
+def last_resource(repository):
+    return repository.resource_store[-1]
 
 
 @pytest.fixture(scope="function")
-def booking(booking_repo):
-    return booking_repo.store[0]
+def booking(repository):
+    return repository.booking_store[0]
 
 
 @pytest.fixture(scope="function")
-def last_booking(booking_repo):
-    return booking_repo.store[-1]
+def last_booking(repository):
+    return repository.booking_store[-1]

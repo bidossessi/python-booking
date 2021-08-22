@@ -5,6 +5,7 @@ from fastapi.responses import JSONResponse
 
 from booking.applications.http.bookings import router as booking_router
 from booking.applications.http.resources import router as resource_router
+from booking.applications.http.free import router as free_router
 from booking.domain.errors import (
     BookingConflict,
     BookingNotFound,
@@ -54,3 +55,4 @@ async def booking_conflict_handler(request: Request, exc: BookingConflict):
 
 app.include_router(resource_router, prefix="/resources", tags=["resources"])
 app.include_router(booking_router, prefix="/bookings", tags=["bookings"])
+app.include_router(free_router, prefix="/free", tags=["free"])

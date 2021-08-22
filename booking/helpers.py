@@ -1,4 +1,5 @@
 import functools
+from typing import List
 
 
 def singleton(cls):
@@ -18,3 +19,7 @@ def singleton(cls):
             return previous_instances[cls].get("instance")
 
     return wrapper
+
+
+def flatten_list(original: List[list]):
+    return [item for sublist in original for item in sublist]
