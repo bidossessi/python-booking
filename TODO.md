@@ -3,6 +3,7 @@
 - Implement recurrence
 - Dockerize it
 - Setup stress tests
+- Implement an ICal URL
 - Implement a SQLite repository
 - Implement a SQLachemy/PostgresSQL repository
 - Implement a NoSQL repository
