@@ -2,7 +2,7 @@ import uuid
 from typing import List, Optional
 
 from booking.domain.errors import ResourceNotFound
-from booking.domain.models import Booking, Resource
+from booking.domain.models import Resource
 from booking.domain.repositories import (
     Page,
     Paginate,
