@@ -50,7 +50,7 @@ async def patch_resource(
     dto: TagsIn,
     service: ResourceService = Depends(get_resource_service),
 ):
-    return service.update_tags(resource_id, dto.tags)
+    return service.update(resource_id, dto.tags)
 
 
 @router.get("/{resource_id}/bookings", response_model=BookingOutPage)

@@ -56,6 +56,19 @@ class ResourceOutPage(BaseModel):
         orm_mode = True
 
 
+class TimeFrameIn(BaseModel):
+    date_start: str
+    date_end: str
+
+    @validator("date_start")
+    def parse_date_start(cls, v):
+        return parse(v)
+
+    @validator("date_end", check_fields=False)
+    def parse_date_end(cls, v):
+        return parse(v)
+
+
 class BookingParams(BaseModel):
     date_start: str
     date_end: str
@@ -85,6 +98,7 @@ class BookingParams(BaseModel):
 class BookingIn(BookingParams):
     resource_id: uuid.UUID
     order_id: str
+    system: bool = False
 
     @validator("date_start")
     def validate_date_start(cls, v):
@@ -104,6 +118,7 @@ class BookingOut(BaseModel):
     order_id: str
     date_start: datetime.datetime
     date_end: datetime.datetime
+    system: bool
 
     class Config:
         orm_mode = True

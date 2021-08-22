@@ -19,22 +19,25 @@ class Resource(ResourceIn):
 
 
 @dataclass
-class BookingIn:
-    resource_id: uuid.UUID
-    order_id: str
+class Timeframe:
     date_start: datetime.datetime
     date_end: datetime.datetime
 
 
 @dataclass
-class Booking(BookingIn):
-    tags: List[str]
+class BookingIn(Timeframe):
+    resource_id: uuid.UUID
+    order_id: str
+    system: bool = False
 
-    # @validator("date_end")
-    def end_before_start(cls, v, values, **kwargs):
-        if "date_start" in values and v < values["date_start"]:
-            raise ValueError("End must be after start")
-        return v
+
+@dataclass
+class Booking(Timeframe):
+    id: uuid.UUID
+    resource_id: uuid.UUID
+    order_id: str
+    system: bool = False
+    tags: Optional[List[str]] = None
 
     def intersects(self, start: datetime.datetime, end: datetime.datetime) -> bool:
         return self.date_start < end and self.date_end > start

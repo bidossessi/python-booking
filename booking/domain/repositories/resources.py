@@ -15,6 +15,10 @@ class ResourceQuery:
 
 class ResourceRepository(abc.ABC):
     @abc.abstractmethod
+    def check(self, query: ResourceQuery) -> bool:
+        pass
+
+    @abc.abstractmethod
     def find(
         self,
         query: ResourceQuery,
@@ -23,7 +27,7 @@ class ResourceRepository(abc.ABC):
         pass
 
     @abc.abstractmethod
-    def get(self, id: uuid.UUID) -> Optional[Resource]:
+    def get(self, id: uuid.UUID) -> Resource:
         pass
 
     @abc.abstractmethod
@@ -31,5 +35,5 @@ class ResourceRepository(abc.ABC):
         pass
 
     @abc.abstractmethod
-    def delete(self, item: Resource):
+    def delete(self, id: uuid.UUID):
         pass

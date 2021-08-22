@@ -107,3 +107,70 @@ def test_create_booking(client, resource):
     )
     data = response.json()
     assert response.status_code == HTTPStatus.CREATED
+
+
+def test_get_resource(client, booking):
+    response = client.get(f"/bookings/{booking.id}/")
+    assert response.status_code == HTTPStatus.OK
+
+
+def test_get_resource_not_found(client):
+    response = client.get(f"/bookings/{uuid.uuid4()}/")
+    assert response.status_code == HTTPStatus.NOT_FOUND
+
+
+def test_get_resource_invalid(client):
+    response = client.get("/bookings/not-a-uuid/")
+    assert response.status_code == HTTPStatus.UNPROCESSABLE_ENTITY
+
+
+def test_update_booking_invalid_fails(client):
+    today = datetime.date.today()
+    response = client.patch(
+        f"/bookings/not-a-uuid/",
+        json={
+            "date_start": (today + relativedelta(weeks=1)).isoformat(),
+            "date_end": (today + relativedelta(weeks=4)).isoformat(),
+        },
+    )
+    data = response.json()
+    assert response.status_code == HTTPStatus.UNPROCESSABLE_ENTITY
+
+
+def test_update_booking_not_found_fails(client):
+    today = datetime.date.today()
+    response = client.patch(
+        f"/bookings/{uuid.uuid4().hex}/",
+        json={
+            "date_start": (today + relativedelta(weeks=1)).isoformat(),
+            "date_end": (today + relativedelta(weeks=4)).isoformat(),
+        },
+    )
+    data = response.json()
+    assert response.status_code == HTTPStatus.NOT_FOUND
+
+
+def test_update_booking_not_dates_fails(client, booking):
+    today = datetime.date.today()
+    response = client.patch(
+        f"/bookings/{booking.id}/",
+        json={
+            "date_start": (today + relativedelta(weeks=1)).isoformat(),
+        },
+    )
+    data = response.json()
+    assert response.status_code == HTTPStatus.UNPROCESSABLE_ENTITY
+
+
+def test_update_booking_conflict_fails(client, booking):
+    today = datetime.date.today()
+    response = client.patch(
+        f"/bookings/{booking.id}/",
+        json={
+            "date_start": (today + relativedelta(weeks=1)).isoformat(),
+            "date_end": (today + relativedelta(weeks=4)).isoformat(),
+        },
+    )
+    data = response.json()
+    print(data)
+    assert response.status_code == HTTPStatus.CONFLICT

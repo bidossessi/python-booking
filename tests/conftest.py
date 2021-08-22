@@ -42,6 +42,7 @@ def booking_repo(resource_repo):
     ]
     items = [
         Booking(
+            id=uuid.uuid4(),
             order_id=uuid.uuid4().hex,
             resource_id=id,
             date_start=start,
@@ -59,3 +60,8 @@ def booking_repo(resource_repo):
 @pytest.fixture(scope="function")
 def resource(resource_repo):
     return resource_repo.store[0]
+
+
+@pytest.fixture(scope="function")
+def booking(booking_repo):
+    return booking_repo.store[0]

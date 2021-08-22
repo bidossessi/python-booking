@@ -18,6 +18,10 @@ class BookingQuery:
 
 class BookingRepository(abc.ABC):
     @abc.abstractmethod
+    def check(self, query: BookingQuery) -> bool:
+        pass
+
+    @abc.abstractmethod
     def find(
         self,
         query: BookingQuery,
@@ -26,7 +30,7 @@ class BookingRepository(abc.ABC):
         pass
 
     @abc.abstractmethod
-    def get(self, id: uuid.UUID) -> Optional[Booking]:
+    def get(self, id: uuid.UUID) -> Booking:
         pass
 
     @abc.abstractmethod
@@ -34,5 +38,5 @@ class BookingRepository(abc.ABC):
         pass
 
     @abc.abstractmethod
-    def delete(self, item: Booking):
+    def delete(self, id: uuid.UUID):
         pass
