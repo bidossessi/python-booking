@@ -1,9 +1,16 @@
-from booking.domain.errors import BookingConflict, BookingNotFound, ResourceNotFound
 from http import HTTPStatus
+
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
-from booking.applications.http.resources import router as resource_router
+
 from booking.applications.http.bookings import router as booking_router
+from booking.applications.http.resources import router as resource_router
+from booking.domain.errors import (
+    BookingConflict,
+    BookingNotFound,
+    ResourceConflict,
+    ResourceNotFound,
+)
 
 app = FastAPI(default_response_class=JSONResponse)
 
@@ -14,7 +21,7 @@ async def root():
 
 
 @app.exception_handler(ResourceNotFound)
-async def version_exception_handler(request: Request, exc: ResourceNotFound):
+async def resource_not_found_handler(request: Request, exc: ResourceNotFound):
     return JSONResponse(
         status_code=HTTPStatus.NOT_FOUND,
         content={"detail": str(exc)},
@@ -22,15 +29,23 @@ async def version_exception_handler(request: Request, exc: ResourceNotFound):
 
 
 @app.exception_handler(BookingNotFound)
-async def version_exception_handler(request: Request, exc: BookingNotFound):
+async def booking_not_foud_handler(request: Request, exc: BookingNotFound):
     return JSONResponse(
         status_code=HTTPStatus.NOT_FOUND,
         content={"detail": str(exc)},
     )
 
 
+@app.exception_handler(ResourceConflict)
+async def resource_conflict_handler(request: Request, exc: ResourceConflict):
+    return JSONResponse(
+        status_code=HTTPStatus.CONFLICT,
+        content={"detail": str(exc)},
+    )
+
+
 @app.exception_handler(BookingConflict)
-async def lock_exception_handler(request: Request, exc: BookingConflict):
+async def booking_conflict_handler(request: Request, exc: BookingConflict):
     return JSONResponse(
         status_code=HTTPStatus.CONFLICT,
         content={"detail": str(exc)},

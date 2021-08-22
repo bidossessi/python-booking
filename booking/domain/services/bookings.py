@@ -1,6 +1,6 @@
-from typing import Iterable, List
 import uuid
-from booking.domain import repositories, models, errors
+
+from booking.domain import errors, models, repositories
 
 
 class BookingService:
@@ -62,3 +62,6 @@ class BookingService:
         match.date_start = timeframe.date_start
         match.date_end = timeframe.date_end
         return self.booking_repo.save(match)
+
+    def delete(self, id: uuid.UUID) -> models.Booking:
+        return self.booking_repo.delete(id)

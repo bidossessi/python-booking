@@ -1,5 +1,5 @@
 import datetime
-from dateutil.relativedelta import relativedelta, MO
+from dateutil.relativedelta import relativedelta
 from booking.domain.models import Booking, Resource
 from booking.data.memory import MemoryBookingRepo, MemoryResourceRepo
 import pytest
@@ -39,6 +39,7 @@ def booking_repo(resource_repo):
             r.tags,
         )
         for count, r in enumerate(resource_repo.store)
+        if r.tags
     ]
     items = [
         Booking(
@@ -63,5 +64,15 @@ def resource(resource_repo):
 
 
 @pytest.fixture(scope="function")
+def last_resource(resource_repo):
+    return resource_repo.store[-1]
+
+
+@pytest.fixture(scope="function")
 def booking(booking_repo):
     return booking_repo.store[0]
+
+
+@pytest.fixture(scope="function")
+def last_booking(booking_repo):
+    return booking_repo.store[-1]

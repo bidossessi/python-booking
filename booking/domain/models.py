@@ -1,9 +1,8 @@
-import uuid
 import datetime
-from dateutil import rrule
+import uuid
 from typing import List, Optional
+
 from pydantic.dataclasses import dataclass
-from pydantic import ValidationError
 
 
 @dataclass
@@ -39,15 +38,17 @@ class Booking(Timeframe):
     system: bool = False
     tags: Optional[List[str]] = None
 
-    def intersects(self, start: datetime.datetime, end: datetime.datetime) -> bool:
+    def intersects(
+        self,
+        start: Optional[datetime.datetime],
+        end: Optional[datetime.datetime],
+    ) -> bool:
+        if not start and not end:
+            return True
         return self.date_start < end and self.date_end > start
 
-    def __eq__(self, other: object) -> bool:
-        return (
-            isinstance(other, "Booking")
-            and other.date_start == self.date_start
-            and other.date_end == self.date_end
-        )
+    def __eq__(self, o: object) -> bool:
+        return hasattr(o, "id") and self.id == o.id
 
     def __gt__(self, other: object):
         return isinstance(other, "Booking") and self.date_start > other.date_start

@@ -2,31 +2,6 @@ import functools
 
 
 def singleton(cls):
-    """
-    Handy decorator for creating a singleton class
-    Description:
-        - Decorate your class with this decorator
-        - If you happen to create another instance of the same class, it will return the previously created one
-        - Supports creation of multiple instances of same class with different args/kwargs
-        - Works for multiple classes
-    Use:
-        >>> from decorators import singleton
-        >>>
-        >>> @singleton
-        ... class A:
-        ...     def __init__(self, *args, **kwargs):
-        ...         pass
-        ...
-        >>>
-        >>> a = A(name='Siddhesh')
-        >>> b = A(name='Siddhesh', lname='Sathe')
-        >>> c = A(name='Siddhesh', lname='Sathe')
-        >>> a is b  # has to be different
-        False
-        >>> b is c  # has to be same
-        True
-        >>>
-    """
     previous_instances = {}
 
     @functools.wraps(cls)

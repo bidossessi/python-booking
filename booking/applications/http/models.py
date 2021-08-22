@@ -1,14 +1,13 @@
 import datetime
+import uuid
+from typing import List, Optional
 
 from dateutil.parser import parse
-from booking.domain.repositories import BookingQuery, ResourceQuery
-from typing import List, Optional
-import uuid
-
 from pydantic import BaseModel, validator
 
+from booking.data.memory import MemoryBookingRepo, MemoryResourceRepo
+from booking.domain.repositories import BookingQuery, ResourceQuery
 from booking.domain.services import BookingService, ResourceService
-from booking.data.memory import MemoryResourceRepo, MemoryBookingRepo
 
 
 async def get_resource_service() -> ResourceService:

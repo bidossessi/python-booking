@@ -6,16 +6,14 @@ from dateutil.relativedelta import relativedelta
 
 
 def test_list_bookings_no_date_fails(client):
-    response = client.get("/bookings")
-    data = response.json()
-
+    response = client.get("/bookings/")
     assert response.status_code == HTTPStatus.UNPROCESSABLE_ENTITY
 
 
 def test_list_bookings(client):
     start = (datetime.date.today() + relativedelta(weeks=1)).isoformat()
     end = (datetime.date.today() + relativedelta(weeks=3)).isoformat()
-    response = client.get(f"/bookings?date_start={start}&date_end={end}")
+    response = client.get(f"/bookings/?date_start={start}&date_end={end}")
     assert response.status_code == HTTPStatus.OK
 
     data = response.json()
@@ -26,7 +24,7 @@ def test_list_bookings(client):
 def test_list_bookings_with_tag(client):
     start = (datetime.date.today() + relativedelta(weeks=2)).isoformat()
     end = (datetime.date.today() + relativedelta(weeks=3)).isoformat()
-    response = client.get(f"/bookings?date_start={start}&date_end={end}&tags=c")
+    response = client.get(f"/bookings/?date_start={start}&date_end={end}&tags=c")
     data = response.json()
     assert response.status_code == HTTPStatus.OK
     assert "count" in data
@@ -90,7 +88,6 @@ def test_create_booking_ends_conflict_fails(client, resource):
             "date_end": (today + relativedelta(weeks=4)).isoformat(),
         },
     )
-    data = response.json()
     assert response.status_code == HTTPStatus.CONFLICT
 
 
@@ -105,7 +102,6 @@ def test_create_booking(client, resource):
             "date_end": (today + relativedelta(weeks=8)).isoformat(),
         },
     )
-    data = response.json()
     assert response.status_code == HTTPStatus.CREATED
 
 
@@ -127,13 +123,12 @@ def test_get_resource_invalid(client):
 def test_update_booking_invalid_fails(client):
     today = datetime.date.today()
     response = client.patch(
-        f"/bookings/not-a-uuid/",
+        "/bookings/not-a-uuid/",
         json={
             "date_start": (today + relativedelta(weeks=1)).isoformat(),
             "date_end": (today + relativedelta(weeks=4)).isoformat(),
         },
     )
-    data = response.json()
     assert response.status_code == HTTPStatus.UNPROCESSABLE_ENTITY
 
 
@@ -146,7 +141,6 @@ def test_update_booking_not_found_fails(client):
             "date_end": (today + relativedelta(weeks=4)).isoformat(),
         },
     )
-    data = response.json()
     assert response.status_code == HTTPStatus.NOT_FOUND
 
 
@@ -158,7 +152,6 @@ def test_update_booking_not_dates_fails(client, booking):
             "date_start": (today + relativedelta(weeks=1)).isoformat(),
         },
     )
-    data = response.json()
     assert response.status_code == HTTPStatus.UNPROCESSABLE_ENTITY
 
 
@@ -174,3 +167,32 @@ def test_update_booking_conflict_fails(client, booking):
     data = response.json()
     print(data)
     assert response.status_code == HTTPStatus.CONFLICT
+
+
+def test_update_booking(client, last_booking):
+    today = datetime.date.today()
+    response = client.patch(
+        f"/bookings/{last_booking.id}/",
+        json={
+            "date_start": (today + relativedelta(year=1)).isoformat(),
+            "date_end": (today + relativedelta(year=3)).isoformat(),
+        },
+    )
+    data = response.json()
+    print(data)
+    assert response.status_code == HTTPStatus.OK
+
+
+def test_delete_resource_invalid(client):
+    response = client.delete("/bookings/not-a-uuid/")
+    assert response.status_code == HTTPStatus.UNPROCESSABLE_ENTITY
+
+
+def test_delete_resource_not_found(client):
+    response = client.delete(f"/bookings/{uuid.uuid4()}/")
+    assert response.status_code == HTTPStatus.NOT_FOUND
+
+
+def test_delete_resource(client, last_booking):
+    response = client.delete(f"/bookings/{last_booking.id}/")
+    assert response.status_code == HTTPStatus.ACCEPTED

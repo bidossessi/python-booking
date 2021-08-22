@@ -1,4 +1,5 @@
 from typing import Generic, List, Optional, TypeVar
+
 from pydantic.dataclasses import dataclass
 
 

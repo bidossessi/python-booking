@@ -1,10 +1,11 @@
 import abc
-from booking.domain.repositories.common import Page, Paginate
 import uuid
-import datetime
 from typing import List, Optional
-from booking.domain.models import Resource
+
 from pydantic.dataclasses import dataclass
+
+from booking.domain.models import Resource
+from booking.domain.repositories.common import Page, Paginate
 
 
 @dataclass

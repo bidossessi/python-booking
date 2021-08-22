@@ -1,16 +1,18 @@
 import abc
-from booking.domain.repositories.common import Page, Paginate
-import uuid
 import datetime
+import uuid
 from typing import List, Optional
-from booking.domain.models import Booking
+
 from pydantic.dataclasses import dataclass
+
+from booking.domain.models import Booking
+from booking.domain.repositories.common import Page, Paginate
 
 
 @dataclass
 class BookingQuery:
-    date_start: datetime.datetime
-    date_end: datetime.datetime
+    date_start: Optional[datetime.datetime] = None
+    date_end: Optional[datetime.datetime] = None
     resource_id: Optional[uuid.UUID] = None
     order_id: Optional[str] = None
     tags: Optional[List[str]] = None

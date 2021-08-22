@@ -1,6 +1,7 @@
-from typing import List
 import uuid
-from booking.domain import repositories, models, errors
+from typing import List
+
+from booking.domain import errors, models, repositories
 
 
 class ResourceService:
@@ -30,5 +31,8 @@ class ResourceService:
         match.tags = tags
         return self.resource_repo.save(match)
 
-    def delete(self, id: models.Resource) -> models.Resource:
+    def delete(self, id: uuid.UUID) -> models.Resource:
+        conflicts = self.booking_repo.check(repositories.BookingQuery(resource_id=id))
+        if conflicts:
+            raise errors.ResourceConflict(id)
         return self.resource_repo.delete(id)
